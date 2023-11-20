@@ -3,9 +3,6 @@
 class RBTree {
 private:
 	using DataType = int;
-	enum Situation {
-		rightRotate, leftRotate, bigRightRotate, bigLeftRotate, colorSwap, none
-	};
 	enum NodeColor {	
 		red, black
 	};
@@ -18,52 +15,63 @@ private:
 
 	Node* root;
 
-	Situation CheckBalanced(Node* ptr) {
+	bool isSwapColor(Node* ptr) {
 		if (ptr->lhs && ptr->rhs && ptr->lhs->color == red && ptr->rhs->color == red)
 			if ((ptr->lhs->lhs && ptr->lhs->lhs->color == red) || (ptr->lhs->rhs && ptr->lhs->rhs->color == red) || (ptr->rhs->lhs && ptr->rhs->lhs->color == red) || (ptr->rhs->rhs && ptr->rhs->rhs->color == red))
-				return colorSwap;
-		if (ptr->lhs && ptr->lhs->color == red) {
-			if (ptr->lhs->lhs && ptr->lhs->lhs->color == red)
-				return rightRotate;
-			if (ptr->lhs->lhs && ptr->lhs->lhs->color == red)
-				return bigRightRotate;
-		}
-		if (ptr->rhs && ptr->rhs->color == red) {
-			if (ptr->rhs->rhs && ptr->rhs->rhs->color == red)
-				return leftRotate;
-			if (ptr->rhs->lhs && ptr->rhs->lhs->color == red)
-				return bigLeftRotate;
-		}
-		return none;
+				return true;
+			else
+				return false;
 	}
 
-	void BalanceTree(Node*& ptr, Node*& parent) {
-		switch (CheckBalanced(ptr))
-		{
-		case colorSwap:
-			//ColorSwap(parent);
-			break;
-		case rightRotate:
-			//RightRotate(parent);
-			break;
-		case leftRotate:
-			//LeftRotate(parent);
-			break;
-		case bigRightRotate:
-			//LeftRotate(parent->rhs);
-			//RightRotate(parent);
-			break;
-		case bigLeftRotate:
-			//RightRotate(parent->lhs);
-			//LeftRotate(parent);
-			break;
-		default:
-			break;
+	bool isRightRotate(Node* ptr) {
+		return ptr->lhs && ptr->lhs->color == red && (ptr->lhs->lhs || ptr->lhs->rhs);
+	}
+
+	bool isLeftRotate(Node* ptr) {
+		return ptr->rhs && ptr->rhs->color == red && (ptr->rhs->rhs || ptr->rhs->lhs);
+	}
+
+	bool isRed(Node* ptr) {
+		return ptr && ptr->color == red;
+	}
+
+	void BalanceTree(Node*& ptr) {
+		if (isSwapColor(ptr)) {
+			// TODO: ColoorSwap
+			return;
+		}
+		if (isRightRotate(ptr)) {
+			if (isRed(ptr->lhs->lhs))
+				// TODO: RightRotate
+				return;
+			if (isRed(ptr->lhs->rhs))
+				// TODO: LeftRotate
+				// TODO: RightRotate
+				return;
+		}
+		if (isLeftRotate(ptr)) {
+			if (isRed(ptr->rhs->rhs))
+				// TODO: LeftRotate
+				return;
+			if (isRed(ptr->rhs->lhs))
+				// TODO: RightRotate
+				// TODO: LeftRotate
+				return;
 		}
 	}
 
 	void RightRotate(Node*& ptr) {
-		
+		Node* temp = ptr->lhs->rhs;
+		ptr->lhs->rhs = ptr;
+		ptr = ptr->lhs;
+		ptr->rhs->lhs = temp;
+	}
+
+	void LeftRotate(Node*& ptr) {
+		Node* temp = ptr->rhs->lhs;
+		ptr->rhs->lhs = ptr;
+		ptr = ptr->rhs;
+		ptr->lhs->rhs = temp;
 	}
 
 	void InsertRecursive(DataType key, Node*& ptr) {
@@ -76,8 +84,8 @@ private:
 		}
 		else {
 			InsertRecursive(key, ptr);
-			BalanceTree(ptr->l);
-			BalanceTree(ptr->rhs);
+			BalanceTree(ptr);
+			BalanceTree(ptr);
 		}
 	}
 

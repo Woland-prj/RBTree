@@ -1,4 +1,5 @@
 #pragma once
+#include <iostream>
 
 class RBTree {
 private:
@@ -19,8 +20,7 @@ private:
 		if (ptr->lhs && ptr->rhs && ptr->lhs->color == red && ptr->rhs->color == red)
 			if ((ptr->lhs->lhs && ptr->lhs->lhs->color == red) || (ptr->lhs->rhs && ptr->lhs->rhs->color == red) || (ptr->rhs->lhs && ptr->rhs->lhs->color == red) || (ptr->rhs->rhs && ptr->rhs->rhs->color == red))
 				return true;
-			else
-				return false;
+		return false;
 	}
 
 	bool isRightRotate(Node* ptr) {
@@ -33,31 +33,6 @@ private:
 
 	bool isRed(Node* ptr) {
 		return ptr && ptr->color == red;
-	}
-
-	void BalanceTree(Node*& ptr) {
-		if (isSwapColor(ptr)) {
-			// TODO: ColoorSwap
-			return;
-		}
-		if (isRightRotate(ptr)) {
-			if (isRed(ptr->lhs->lhs))
-				// TODO: RightRotate
-				return;
-			if (isRed(ptr->lhs->rhs))
-				// TODO: LeftRotate
-				// TODO: RightRotate
-				return;
-		}
-		if (isLeftRotate(ptr)) {
-			if (isRed(ptr->rhs->rhs))
-				// TODO: LeftRotate
-				return;
-			if (isRed(ptr->rhs->lhs))
-				// TODO: RightRotate
-				// TODO: LeftRotate
-				return;
-		}
 	}
 
 	void RightRotate(Node*& ptr) {
@@ -74,6 +49,52 @@ private:
 		ptr->lhs->rhs = temp;
 	}
 
+	void ColorSwap(Node*& ptr) {
+		ptr->color = red;
+		ptr->lhs->color = black;
+		ptr->rhs->color = black;
+	}
+
+	void BalanceTree(Node*& ptr) {
+		if (isSwapColor(ptr)) {
+			std::cout << "color swap" << std::endl;
+			ColorSwap(ptr);
+			return;
+		}
+		if (isRightRotate(ptr)) {
+			std::cout << "right rotate" << std::endl;
+			if (isRed(ptr->lhs->lhs)) {
+				RightRotate(ptr);
+				ptr->color = black;
+				ptr->rhs->color = red;
+				return;
+			}
+			if (isRed(ptr->lhs->rhs)){
+				LeftRotate(ptr->lhs);
+				RightRotate(ptr);
+				ptr->color = black;
+				ptr->rhs->color = red;
+				return;
+			}
+		}
+		if (isLeftRotate(ptr)) {
+			std::cout << "left rotate" <<std::endl;
+			if (isRed(ptr->rhs->rhs)) {
+				LeftRotate(ptr);
+				ptr->color = black;
+				ptr->lhs->color = red;
+				return;
+			}
+			if (isRed(ptr->rhs->lhs)){
+				LeftRotate(ptr->rhs);
+				RightRotate(ptr);
+				ptr->color = black;
+				ptr->rhs->color = red;
+				return;
+			}
+		}
+	}
+
 	void InsertRecursive(DataType key, Node*& ptr) {
 		if (ptr == nullptr) {
 			ptr = new Node;
@@ -83,9 +104,24 @@ private:
 			ptr->color = red;
 		}
 		else {
-			InsertRecursive(key, ptr);
+			key <= ptr->key 
+				? InsertRecursive(key, ptr->lhs) 
+				: InsertRecursive(key, ptr->rhs);
 			BalanceTree(ptr);
-			BalanceTree(ptr);
+		}
+	}
+
+	void PrintRecursive(Node* ptr) {
+		if (ptr != nullptr) {
+			std::cout 
+				<< ptr->key 
+				<< ' ' 
+				<< ptr->color 
+				<< std::endl;
+			PrintRecursive(ptr->lhs);
+			std::cout << std::endl;
+			PrintRecursive(ptr->rhs);
+			std::cout << std::endl;
 		}
 	}
 
@@ -96,5 +132,12 @@ public:
 
 	void Insert(DataType key) {
 		InsertRecursive(key, root);
+		if (root->color == red) 
+			root->color = black;
+	}
+
+	void Print() {
+		PrintRecursive(root);
 	}
 };
+

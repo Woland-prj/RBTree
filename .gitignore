@@ -2,3 +2,6 @@ x64/
 *.vcxproj
 *.vcxproj.filters
 *.vcxproj.user
+
+tree
+*.o

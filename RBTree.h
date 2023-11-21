@@ -83,11 +83,13 @@ private:
 				LeftRotate(ptr);
 				ptr->color = black;
 				ptr->lhs->color = red;
+				std::cout << ptr->color << ' ' << ptr->lhs->color << ' ' << ptr->key << ' ' << ptr->lhs->key <<std::endl;
 				return;
 			}
 			if (isRed(ptr->rhs->lhs)){
-				LeftRotate(ptr->rhs);
-				RightRotate(ptr);
+				std::cout << "big rotate " << ptr->rhs->lhs->key << ' ' << ptr->key <<std::endl;
+				RightRotate(ptr->rhs);
+				LeftRotate(ptr);
 				ptr->color = black;
 				ptr->rhs->color = red;
 				return;
@@ -140,4 +142,3 @@ public:
 		PrintRecursive(root);
 	}
 };
-

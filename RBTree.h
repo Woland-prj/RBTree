@@ -127,6 +127,28 @@ private:
 		}
 	}
 
+	void DeleteRecursive(Node*& ptr, Node*& delPtr) {
+		if (ptr != nullptr) {
+			DeleteRecursive(ptr, delPtr);
+			if (delPtr != nullptr) {
+				if (!delPtr->lhs || !delPtr->rhs) {
+					if (!delPtr->lhs)
+						ptr = delPtr->rhs;
+					if (!delPtr->rhs) 
+						ptr = delPtr->lhs;
+					if (!delPtr->lhs && !delPtr->rhs) 
+						ptr = nullptr;
+					delete delPtr;
+					return;
+				}
+				// TODO: findNextKey(delPtr->rhs);
+				DataType nextKey = 0;
+				ptr->key = nextKey;
+
+			}
+		}
+	}
+
 public:
 	RBTree() {
 		root = nullptr;
@@ -140,5 +162,10 @@ public:
 
 	void Print() {
 		PrintRecursive(root);
+	}
+
+	void Delete() {
+		Node* delPtr = nullptr;
+		DeleteRecursive(root, delPtr);
 	}
 };

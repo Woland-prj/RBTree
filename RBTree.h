@@ -16,7 +16,7 @@ private:
 
 	Node* root;
 
-	bool isSwapColor(Node* ptr) {
+	bool isColorSwap(Node* ptr) {
 		if (ptr->lhs && ptr->rhs && ptr->lhs->color == red && ptr->rhs->color == red)
 			if ((ptr->lhs->lhs && ptr->lhs->lhs->color == red) || (ptr->lhs->rhs && ptr->lhs->rhs->color == red) || (ptr->rhs->lhs && ptr->rhs->lhs->color == red) || (ptr->rhs->rhs && ptr->rhs->rhs->color == red))
 				return true;
@@ -56,13 +56,11 @@ private:
 	}
 
 	void BalanceTree(Node*& ptr) {
-		if (isSwapColor(ptr)) {
-			std::cout << "color swap" << std::endl;
+		if (isColorSwap(ptr)) {
 			ColorSwap(ptr);
 			return;
 		}
 		if (isRightRotate(ptr)) {
-			std::cout << "right rotate" << std::endl;
 			if (isRed(ptr->lhs->lhs)) {
 				RightRotate(ptr);
 				ptr->color = black;
@@ -78,20 +76,17 @@ private:
 			}
 		}
 		if (isLeftRotate(ptr)) {
-			std::cout << "left rotate" <<std::endl;
 			if (isRed(ptr->rhs->rhs)) {
 				LeftRotate(ptr);
 				ptr->color = black;
 				ptr->lhs->color = red;
-				std::cout << ptr->color << ' ' << ptr->lhs->color << ' ' << ptr->key << ' ' << ptr->lhs->key <<std::endl;
 				return;
 			}
 			if (isRed(ptr->rhs->lhs)){
-				std::cout << "big rotate " << ptr->rhs->lhs->key << ' ' << ptr->key <<std::endl;
 				RightRotate(ptr->rhs);
 				LeftRotate(ptr);
 				ptr->color = black;
-				ptr->rhs->color = red;
+				ptr->lhs->color = red;
 				return;
 			}
 		}
@@ -113,23 +108,53 @@ private:
 		}
 	}
 
-	void PrintRecursive(Node* ptr) {
+	std::string GetLvl(int lvl) {
+		std::string strlvl = "";
+		for (int i = 0; i < lvl; i++)
+			strlvl += '.';
+		return strlvl;
+	}
+
+	void PrintRecursive(Node* ptr, int& lvl) {
 		if (ptr != nullptr) {
+			std::string color;
+			ptr->color == red ? color = " red": color = " black";
 			std::cout 
+				<< GetLvl(lvl)
 				<< ptr->key 
-				<< ' ' 
-				<< ptr->color 
+				<< color
 				<< std::endl;
-			PrintRecursive(ptr->lhs);
-			std::cout << std::endl;
-			PrintRecursive(ptr->rhs);
-			std::cout << std::endl;
+			lvl++;
+			PrintRecursive(ptr->lhs, lvl);
+			PrintRecursive(ptr->rhs, lvl);
+			lvl--;
 		}
 	}
 
-	void DeleteRecursive(Node*& ptr, Node*& delPtr) {
+	void DestructRecursive(Node*& ptr) {
 		if (ptr != nullptr) {
-			DeleteRecursive(ptr, delPtr);
+			DestructRecursive(ptr->lhs);
+			DestructRecursive(ptr->rhs);
+			delete ptr;
+			ptr = nullptr;
+		}
+	}
+
+	DataType findNextKey(Node*& ptr) {
+		if (ptr->lhs) {
+			findNextKey(ptr->lhs);
+		} else {
+			Node* temp = ptr->rhs;
+			DataType key = ptr->key;
+			delete ptr;
+			ptr = temp;
+			return key;
+		}
+	}
+
+	void DeleteRecursive(Node*& ptr, Node*& delPtr, DataType delKey) {
+		if (ptr != nullptr) {
+			DeleteRecursive(ptr, delPtr, delKey);
 			if (delPtr != nullptr) {
 				if (!delPtr->lhs || !delPtr->rhs) {
 					if (!delPtr->lhs)
@@ -138,14 +163,18 @@ private:
 						ptr = delPtr->lhs;
 					if (!delPtr->lhs && !delPtr->rhs) 
 						ptr = nullptr;
+					NodeColor delColor = delPtr->color;
 					delete delPtr;
+					delPtr = nullptr;
+					if (delColor == black)
+						//TODO: fixDeleating;
 					return;
 				}
-				// TODO: findNextKey(delPtr->rhs);
-				DataType nextKey = 0;
+				DataType nextKey = findNextKey(delPtr->rhs);
 				ptr->key = nextKey;
-
 			}
+			if (ptr->key == delKey)
+				delPtr = ptr;
 		}
 	}
 
@@ -161,11 +190,16 @@ public:
 	}
 
 	void Print() {
-		PrintRecursive(root);
+		int lvl = 0;
+		PrintRecursive(root, lvl);
 	}
 
-	void Delete() {
+	~RBTree() {
+		DestructRecursive(root);
+	}
+
+	void Delete(DataType delKey) {
 		Node* delPtr = nullptr;
-		DeleteRecursive(root, delPtr);
+		DeleteRecursive(root, delPtr, delKey);
 	}
 };
